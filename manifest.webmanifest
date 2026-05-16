@@ -1,0 +1,16 @@
+{
+  "name": "AfterCopy",
+  "short_name": "AfterCopy",
+  "description": "Post-assignment decompression and reflection for journalists.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f6f2ea",
+  "theme_color": "#304657",
+  "icons": [
+    {
+      "src": "./assets/aftercopy-mark.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}

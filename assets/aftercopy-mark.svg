@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" role="img" aria-label="AfterCopy logo">
+  <rect width="192" height="192" rx="42" fill="#304657"/>
+  <path d="M49 52h70c15 0 24 9 24 23v52c0 14-9 23-24 23H73l-24 19v-94c0-14 9-23 24-23Z" fill="#F6F2EA"/>
+  <path d="M74 80h46M74 101h32M74 122h39" stroke="#304657" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="139" cy="54" r="22" fill="#D96F54"/>
+</svg>
