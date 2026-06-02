@@ -536,8 +536,8 @@ function renderAssignmentModal() {
               <option value="activated">Activated</option>
             </select>
           </div>
-          <p class="consent">Reminders are private browser reminders for 24 hours, 72 hours, and 7 days. Browser notifications are optional.</p>
-          <div class="form-actions"><button class="ghost" type="button" data-action="close-modal">Cancel</button><button class="primary" type="submit">Save debrief</button></div>
+          <p class="consent">Required fields must be completed before moving to the self-check. Reminders are private browser reminders for 24 hours, 72 hours, and 7 days. Browser notifications are optional.</p>
+          <div class="form-actions"><button class="ghost" type="button" data-action="close-modal">Previous</button><button class="primary" type="submit" data-submit-assignment disabled>Next: self-check</button></div>
         </form>
       </section>
     </div>
@@ -836,6 +836,15 @@ function bindEvents() {
   const assignment = document.querySelector("[data-action='save-assignment']");
   if (assignment) {
     assignment.addEventListener("submit", saveAssignment);
+    const submitButton = assignment.querySelector("[data-submit-assignment]");
+    const syncAssignmentButton = () => {
+      submitButton.disabled = !assignment.checkValidity();
+    };
+    assignment.querySelectorAll("input, textarea, select").forEach(field => {
+      field.addEventListener("input", syncAssignmentButton);
+      field.addEventListener("change", syncAssignmentButton);
+    });
+    syncAssignmentButton();
   }
 
   document.querySelectorAll("[data-check]").forEach(input => {
