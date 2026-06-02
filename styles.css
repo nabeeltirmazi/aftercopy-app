@@ -39,6 +39,11 @@ button {
   cursor: pointer;
 }
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.46;
+}
+
 .shell {
   width: min(100%, 430px);
   min-height: 100vh;
@@ -460,6 +465,40 @@ button {
 
 .form-actions .primary {
   flex: 1;
+}
+
+.flow-controls {
+  margin: 20px 0 8px;
+  padding: 12px;
+  background: #fffefb;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.flow-controls p {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.flow-controls div {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 10px;
+}
+
+.flow-controls .primary,
+.flow-controls .ghost {
+  width: 100%;
+}
+
+.check-confirm {
+  background: #f4fbf8;
+  border-radius: 8px;
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-top: 6px;
 }
 
 .empty {

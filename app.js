@@ -30,6 +30,8 @@ const recoveryOptions = [
 
 const professionalSupportTagline = "This is not a replacement for in-person care from a qualified mental health professional. If symptoms feel serious, worsening, or unsafe, please contact a licensed clinician, doctor, or local emergency support.";
 
+const flowTabs = ["log", "check", "plan", "report"];
+
 const moodPrompts = {
   steady: [
     "Name one thing you did professionally well, without minimizing it.",
@@ -160,6 +162,7 @@ function renderApp() {
       <section class="screen">
         ${renderHeader()}
         ${renderTab()}
+        ${renderFlowControls()}
         ${renderCreatorFooter()}
       </section>
       ${renderNav()}
@@ -199,6 +202,77 @@ function renderTab() {
     insights: renderInsights
   };
   return tabs[state.tab]();
+}
+
+function flowStatus(tab = state.tab) {
+  const latest = latestAssignment();
+  const recoveryCount = latest?.recovery?.length || 0;
+  if (tab === "home") {
+    return {
+      previous: null,
+      next: latest ? "check" : null,
+      nextLabel: latest ? "Continue" : "Start debrief",
+      nextModal: latest ? null : "assignment",
+      canNext: true,
+      helper: latest ? "Continue the guided flow from your latest assignment." : "Start with a completed assignment debrief."
+    };
+  }
+  if (tab === "log") {
+    return {
+      previous: "home",
+      next: "check",
+      nextLabel: "Next: self-check",
+      canNext: Boolean(latest),
+      helper: latest ? "Assignment saved. Continue to the self-check." : "Add an assignment before continuing."
+    };
+  }
+  if (tab === "check") {
+    return {
+      previous: "log",
+      next: "plan",
+      nextLabel: "Next: recovery plan",
+      canNext: Boolean(latest?.selfCheckReviewed),
+      helper: latest?.selfCheckReviewed ? "Self-check reviewed. Continue to recovery planning." : "Review the self-check and tick the confirmation box before continuing."
+    };
+  }
+  if (tab === "plan") {
+    return {
+      previous: "check",
+      next: "report",
+      nextLabel: "Next: report",
+      canNext: recoveryCount > 0,
+      helper: recoveryCount > 0 ? "Recovery actions selected. Generate the report next." : "Choose at least one recovery action before continuing."
+    };
+  }
+  if (tab === "report") {
+    return {
+      previous: "plan",
+      next: null,
+      nextLabel: "Report ready",
+      canNext: false,
+      helper: "Copy the in-app report or the LLM prompt when you are ready."
+    };
+  }
+  return null;
+}
+
+function renderFlowControls() {
+  const status = flowStatus();
+  if (!status) return "";
+  const previousButton = status.previous
+    ? `<button class="ghost" data-tab="${status.previous}">Previous</button>`
+    : `<button class="ghost" disabled>Previous</button>`;
+  const nextButton = status.nextModal
+    ? `<button class="primary" data-modal="${status.nextModal}">${status.nextLabel}</button>`
+    : status.next
+      ? `<button class="primary" data-tab="${status.next}" ${status.canNext ? "" : "disabled"}>${status.nextLabel}</button>`
+      : `<button class="primary" disabled>${status.nextLabel}</button>`;
+  return `
+    <section class="flow-controls" aria-label="Guided app flow">
+      <p>${escapeHTML(status.helper)}</p>
+      <div>${previousButton}${nextButton}</div>
+    </section>
+  `;
 }
 
 function renderNav() {
@@ -291,6 +365,10 @@ function renderCheck() {
           <input type="checkbox" data-check="${item}" ${checks.includes(item) ? "checked" : ""} ${latest ? "" : "disabled"} />
         </label>
       `).join("")}
+      <label class="check-row check-confirm">
+        <span>I have reviewed this self-check for the current assignment.</span>
+        <input type="checkbox" data-review-check ${latest?.selfCheckReviewed ? "checked" : ""} ${latest ? "" : "disabled"} />
+      </label>
     </section>
     <div class="section-title"><h2>Current signal</h2></div>
     ${latest ? renderScore(checks.length) : `<div class="empty">Log an assignment first, then complete a self-check.</div>`}
@@ -411,15 +489,15 @@ function renderAssignmentModal() {
               <option>Death, grief, or community tragedy</option>
             </select>
           </div>
-          <div class="field"><label>Where did it happen?</label><input name="locationContext" placeholder="City, hospital, court, accident site, community location..." /></div>
-          <div class="field"><label>Date completed</label><input type="date" name="date" value="${todayISO()}" /></div>
-          <div class="field"><label>What happened?</label><textarea name="summary" placeholder="Use broad terms. Avoid source-identifying details."></textarea></div>
-          <div class="field"><label>What affected you?</label><textarea name="affected" placeholder="Image, sound, conversation, pressure, deadline..."></textarea></div>
+          <div class="field"><label>Where did it happen?</label><input name="locationContext" placeholder="City, hospital, court, accident site, community location..." required /></div>
+          <div class="field"><label>Date completed</label><input type="date" name="date" value="${todayISO()}" required /></div>
+          <div class="field"><label>What happened?</label><textarea name="summary" placeholder="Use broad terms. Avoid source-identifying details." required></textarea></div>
+          <div class="field"><label>What affected you?</label><textarea name="affected" placeholder="Image, sound, conversation, pressure, deadline..." required></textarea></div>
           <div class="field"><label>People you interacted with</label><input name="people" placeholder="Survivors, families, children, officials, witnesses..." /></div>
           <div class="field"><label>Images, sounds, smells, words, or moments replaying</label><textarea name="sensoryDetails" placeholder="Describe only what is safe to record."></textarea></div>
-          <div class="field"><label>What are you feeling right now?</label><textarea name="emotions" placeholder="Sad, angry, numb, guilty, helpless, anxious, exhausted..."></textarea></div>
-          <div class="field"><label>Strongest emotion</label><input name="strongestEmotion" placeholder="Anger, fear, guilt, numbness..." /></div>
-          <div class="field"><label>Body reactions</label><textarea name="bodyReactions" placeholder="Headache, tight chest, fatigue, crying, sleep trouble, racing thoughts..."></textarea></div>
+          <div class="field"><label>What are you feeling right now?</label><textarea name="emotions" placeholder="Sad, angry, numb, guilty, helpless, anxious, exhausted..." required></textarea></div>
+          <div class="field"><label>Strongest emotion</label><input name="strongestEmotion" placeholder="Anger, fear, guilt, numbness..." required /></div>
+          <div class="field"><label>Body reactions</label><textarea name="bodyReactions" placeholder="Headache, tight chest, fatigue, crying, sleep trouble, racing thoughts..." required></textarea></div>
           <div class="field"><label>Are you feeling safe right now?</label>
             <select name="safetyLevel">
               <option>Yes</option>
@@ -437,8 +515,8 @@ function renderAssignmentModal() {
           <div class="field"><label>Newsroom support</label><textarea name="newsroomSupport" placeholder="What support did or did not happen before or after the assignment?"></textarea></div>
           <div class="field"><label>Current work pressure</label><textarea name="workPressure" placeholder="Deadline pressure, editing disturbing visuals, continuing coverage..."></textarea></div>
           <div class="field"><label>Dismissed or unsupported moments</label><textarea name="dismissed" placeholder="Anything treated as 'part of the job' or minimized?"></textarea></div>
-          <div class="field"><label>What do you need before returning to work?</label><textarea name="need" placeholder="Sleep, colleague check-in, no footage review..."></textarea></div>
-          <div class="field"><label>What do you need most right now?</label><input name="recoveryNeed" placeholder="Vent, sleep, stop replaying images, set boundaries..." /></div>
+          <div class="field"><label>What do you need before returning to work?</label><textarea name="need" placeholder="Sleep, colleague check-in, no footage review..." required></textarea></div>
+          <div class="field"><label>What do you need most right now?</label><input name="recoveryNeed" placeholder="Vent, sleep, stop replaying images, set boundaries..." required /></div>
           <div class="field"><label>Tone for the external LLM prompt</label>
             <select name="tone">
               <option>Gentle</option>
@@ -718,11 +796,17 @@ Generate only the final comprehensive wellness plan and Word-ready record. Make 
 
 function bindEvents() {
   document.querySelectorAll("[data-tab]").forEach(button => {
-    button.addEventListener("click", () => setState({ tab: button.dataset.tab, activeModal: null }));
+    button.addEventListener("click", () => {
+      if (button.disabled) return;
+      setState({ tab: button.dataset.tab, activeModal: null });
+    });
   });
 
   document.querySelectorAll("[data-modal]").forEach(button => {
-    button.addEventListener("click", () => setState({ activeModal: button.dataset.modal }));
+    button.addEventListener("click", () => {
+      if (button.disabled) return;
+      setState({ activeModal: button.dataset.modal });
+    });
   });
 
   document.querySelectorAll("[data-action='close-modal']").forEach(button => {
@@ -756,6 +840,10 @@ function bindEvents() {
 
   document.querySelectorAll("[data-check]").forEach(input => {
     input.addEventListener("change", () => updateLatestList("checks", input.dataset.check, input.checked));
+  });
+
+  document.querySelectorAll("[data-review-check]").forEach(input => {
+    input.addEventListener("change", () => updateLatestValue("selfCheckReviewed", input.checked));
   });
 
   document.querySelectorAll("[data-plan]").forEach(input => {
@@ -815,6 +903,7 @@ function saveAssignment(event) {
     notes: form.get("notes"),
     mood: form.get("mood"),
     checks: [],
+    selfCheckReviewed: false,
     recovery: [],
     createdAt
   };
@@ -848,6 +937,13 @@ function updateLatestList(key, value, enabled) {
     enabled ? list.add(value) : list.delete(value);
     return { ...entry, [key]: [...list] };
   });
+  setState({ assignments });
+}
+
+function updateLatestValue(key, value) {
+  const latest = latestAssignment();
+  if (!latest) return;
+  const assignments = state.assignments.map(entry => entry.id === latest.id ? { ...entry, [key]: value } : entry);
   setState({ assignments });
 }
 
