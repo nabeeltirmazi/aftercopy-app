@@ -213,28 +213,31 @@ button {
 }
 
 .hero {
-  padding: 18px;
   border-radius: 8px;
-  color: white;
-  min-height: 190px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  background:
-    linear-gradient(180deg, rgba(25, 36, 45, 0.08), rgba(25, 36, 45, 0.9)),
-    url("./assets/newsroom-debrief.svg") center/cover no-repeat;
+  overflow: hidden;
+  background: #0e1a24;
+  border: 1px solid rgba(25, 36, 45, 0.14);
 }
 
-.hero p,
+.hero img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.hero-caption,
 .section-intro,
 .muted {
   color: var(--muted);
   line-height: 1.45;
 }
 
-.hero p {
-  margin: 10px 0 0;
-  color: rgba(255, 250, 242, 0.84);
+.hero-caption {
+  margin: 12px 2px 0;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 700;
 }
 
 .quick-grid {

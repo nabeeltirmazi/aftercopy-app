@@ -28,6 +28,8 @@ const recoveryOptions = [
   "No graphic review tonight"
 ];
 
+const professionalSupportTagline = "This is not a replacement for in-person care from a qualified mental health professional. If symptoms feel serious, worsening, or unsafe, please contact a licensed clinician, doctor, or local emergency support.";
+
 const moodPrompts = {
   steady: [
     "Name one thing you did professionally well, without minimizing it.",
@@ -227,9 +229,9 @@ function renderHome() {
   const due = dueReminders();
   return `
     <section class="hero">
-      <h1>Close the assignment before it follows you home.</h1>
-      <p>Log what happened, check your nervous system, and set a short recovery plan before more work lands.</p>
+      <img src="./assets/aftercopy-hero.png" alt="AfterCopy reflection graphic for journalists after difficult assignments" />
     </section>
+    <p class="hero-caption">Log what happened, check your nervous system, and set a short recovery plan before more work lands.</p>
     ${due.length ? `<div class="support-strip">${icon("bell")} ${due.length} reflection check-in${due.length > 1 ? "s are" : " is"} due. Open Patterns to review them.</div>` : ""}
     <div class="quick-grid">
       <button class="quick-card" data-modal="assignment">${icon("plus")}<strong>New assignment</strong><span>Debrief a completed story</span></button>
@@ -337,6 +339,7 @@ function renderReport() {
   return `
     <div class="section-title"><h2>Wellness report</h2></div>
     <p class="section-intro">This report is generated only from your saved inputs. It is for personal reflection and record-keeping, not diagnosis or employer review.</p>
+    <div class="warning">${escapeHTML(professionalSupportTagline)}</div>
     ${state.copyNotice ? `<div class="support-strip">${escapeHTML(state.copyNotice)}</div>` : ""}
     <section class="panel report-panel">
       <div class="section-title compact"><h2>In-app report</h2><button class="ghost" data-copy="report">${icon("copy")} Copy</button></div>
@@ -601,7 +604,7 @@ Private notes
 ${valueOrBlank(entry.notes)}
 
 Safety note
-This report is a personal reflection record. It does not diagnose, treat, or replace professional mental health support. If I feel unsafe, at risk of harming myself, unable to function, or overwhelmed by flashbacks or panic, I should contact a trusted person or local emergency/mental health support immediately.`;
+This report is a personal reflection record. It does not diagnose, treat, or replace professional mental health support. ${professionalSupportTagline} If I feel unsafe, at risk of harming myself, unable to function, or overwhelmed by flashbacks or panic, I should contact a trusted person or local emergency/mental health support immediately.`;
 }
 
 function generateWellnessPlanPrompt(entry) {
@@ -684,7 +687,7 @@ Give me a short grounding exercise I can do immediately in 2-3 minutes.
 
 5. Healthy Recovery Strategy
 
-Suggest a practical recovery plan for the next 30 minutes, tonight, the next 24 hours, and before my next assignment.
+Suggest a practical recovery plan for the next 30 minutes, tonight, the next 24 hours, and before my next assignment. Include this note in the recovery strategy section: "${professionalSupportTagline}"
 
 6. Boundary Check
 
@@ -707,7 +710,7 @@ ${assignmentSpecificSupport(entry)}
 Tell me what warning signs would mean I should speak to a trusted person, counselor, therapist, doctor, peer support person, or emergency support service.
 
 Safety note to include at the end:
-If I feel unsafe, at risk of harming myself, unable to function, or overwhelmed by flashbacks or panic, I should contact a trusted person or local emergency/mental health support immediately. This prompt is for reflection and grounding, not a replacement for professional help.
+If I feel unsafe, at risk of harming myself, unable to function, or overwhelmed by flashbacks or panic, I should contact a trusted person or local emergency/mental health support immediately. ${professionalSupportTagline}
 
 Output requirement:
 Generate only the final comprehensive wellness plan and Word-ready record. Make it personal, assignment-specific, emotionally safe, practical, non-clinical, and easy to save. Avoid generic wellness advice, spiritual cliches, "you are strong" platitudes, diagnosing trauma, or blaming me for emotional reactions.`;
